@@ -69,16 +69,18 @@ class LogLinearLanguageModel:
         for ex_num, position in enumerate(positions):
             x = corpus[position-WINDOW+1:position]
             y = corpus[position]
-
             # Compute the probability over the vocabulary given x.
             q = self.compute_probs(x)
-
+            z = x.copy()
+            z.append(y)
+            y_idx = self.fcache[tuple(z)]
+            for ind_y in y_idx:
             # TODO: Implement the gradient update w = w - lr * grad_w J(w).
             # The update must be sparse. Do not work with the whole vector w.
             # Use caches self.fcache and self.x2ys.
+                self.w[ind_y] -= self.lr * np.log(q[self.token_to_idx[y]])
 
             total_loss -= math.log(q[self.token_to_idx[y]])
-
             if (ex_num + 1) % self.check_interval == 0:
                 print('%d/%d examples, avg loss %g' %
                       (ex_num + 1, len(positions), total_loss / (ex_num + 1)))
@@ -87,8 +89,13 @@ class LogLinearLanguageModel:
 
     def compute_probs(self, x):
         # TODO: Calculate NumPy score vector q_ s.t. q_[ind(y)] = w' phi(x, y).
-        q_ = None
-
+        q_ = np.zeros(len(self.token_to_idx))
+        for y in self.x2ys[tuple(x)]:
+            c = x.copy()
+            c.append(y)
+            y_idx = self.fcache[tuple(c)]
+            for ind_y in y_idx:
+                q_[self.token_to_idx[y]] += self.w[ind_y]
         return softmax(q_)
 
     def test(self, corpus):
