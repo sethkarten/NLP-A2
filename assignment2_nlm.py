@@ -110,15 +110,7 @@ class FFLM(nn.Module):
     def forward(self, X, Y, mean=True):  # X (B x nhis), Y (B)
         # TODO: calculate logits (B x V) s.t.
         #       softmax(logits[i,:]) = distribution p(:|X[i]) under the model.
-        logits = torch.zeros([self.batch_size, self.V])
-        # XX = self.E(X)
-        # XX=XX.view((self.nhis, self.batch_size, XX.size()[2]))
-        # for i in range(self.nhis):
-        #     logits[:self.batch_size, :self.V]=self.FF(XX[i])
-        for i in range(self.batch_size):
-            _X = self.E(X[i])
-            for x in _X:
-                logits[i] = self.FF(x)
+        logits = self.FF(self.E(X))[:,self.nhis-1,:]
         loss = self.mean_ce(logits, Y) if mean else self.sum_ce(logits, Y)  # expects (16,1000)
         return loss
 
