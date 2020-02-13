@@ -97,7 +97,7 @@ class FFLM(nn.Module):
         self.E = nn.Embedding(self.V, wdim)
 
         # TODO: define feedfoward layer with correct dimensions.
-        self.FF = None
+        self.FF = FF(wdim,hdim,len(vocab),nlayers)
 
         self.apply(get_init_weights(init))
         self.lr = lr
@@ -110,8 +110,19 @@ class FFLM(nn.Module):
     def forward(self, X, Y, mean=True):  # X (B x nhis), Y (B)
         # TODO: calculate logits (B x V) s.t.
         #       softmax(logits[i,:]) = distribution p(:|X[i]) under the model.
-        logits = None
-        loss = self.mean_ce(logits, Y) if mean else self.sum_ce(logits, Y)
+        logits = torch.zeros([self.batch_size, self.V-1])
+        # print(self.E(X[0]).size())
+        XX = self.E(X).view((self.nhis, self.batch_size, 30))
+        # print(XX.size())
+        for i in range(self.nhis):
+            logits=self.FF(XX[i])
+        # print(logits.size())
+        # for i in range(self.batch_size):
+        #     _X = self.E(X[i])
+        #     for x in _X:
+        #         logits[i] = self.FF(x)
+        # print(logits[0])
+        loss = self.mean_ce(logits, Y) if mean else self.sum_ce(logits, Y)  # expects (16,1000)
         return loss
 
     def train_epochs(self, train_toks, val_toks, epochs):
