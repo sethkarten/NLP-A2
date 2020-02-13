@@ -71,15 +71,35 @@ class LogLinearLanguageModel:
             y = corpus[position]
             # Compute the probability over the vocabulary given x.
             q = self.compute_probs(x)
-            z = x.copy()
-            z.append(y)
-            y_idx = self.fcache[tuple(z)]
-            for ind_y in y_idx:
+            phi = np.zeros(len(self.token_to_idx))
+            # print(len(self.fcache),len(self.w),len(self.f2i))
+
+            # print(tuple(x)+tuple([y]), y_idx)
+            # for ind_y in y_idx:
+            #     phi[ind_y] = 1
+            for _y in self.x2ys[tuple(x)]:
+                val = 0
+                if _y is y:
+                    val = 1
+                exp_val = 0
+                y_idx = self.fcache[tuple(x)+tuple([_y])]
+                feat = self.feature_extractor(tuple(x)+tuple([y]))
+                for ind_y in y_idx:
+                    # exp_val += q[ind_y] * 1
+                    self.w[ind_y] -= self.lr * (q[self.token_to_idx[_y]]- val)
+
             # TODO: Implement the gradient update w = w - lr * grad_w J(w).
             # The update must be sparse. Do not work with the whole vector w.
             # Use caches self.fcache and self.x2ys.
-                self.w[ind_y] -= self.lr * np.log(q[self.token_to_idx[y]])
-
+            # for _y in self.x2ys[tuple(x)]:
+            #     c = x.copy()
+            #     c.append(y)
+            #     y_idx = self.fcache[tuple(c)]
+            #     for ind_y in y_idx:
+            #         self.w[ind_y] -= self.lr * np.log(q[self.token_to_idx[_y]])
+            # print(y, self.token_to_idx[y], q[self.token_to_idx[y]])
+            # print(math.log(q[self.token_to_idx[y]]))
+            # print()
             total_loss -= math.log(q[self.token_to_idx[y]])
             if (ex_num + 1) % self.check_interval == 0:
                 print('%d/%d examples, avg loss %g' %
@@ -91,9 +111,7 @@ class LogLinearLanguageModel:
         # TODO: Calculate NumPy score vector q_ s.t. q_[ind(y)] = w' phi(x, y).
         q_ = np.zeros(len(self.token_to_idx))
         for y in self.x2ys[tuple(x)]:
-            c = x.copy()
-            c.append(y)
-            y_idx = self.fcache[tuple(c)]
+            y_idx = self.fcache[tuple(x)+tuple([y])]
             for ind_y in y_idx:
                 q_[self.token_to_idx[y]] += self.w[ind_y]
         return softmax(q_)
@@ -179,7 +197,7 @@ def extract_features(training_corpus, feature_extractor):
 
 def softmax(v):
     v_max = np.max(v)
-    out = np.array([np.exp(v_i - v_max) for v_i in v])
+    out = np.exp(v - v_max)
     out /= np.sum(out)
     return out  # TODO: Implement
 
