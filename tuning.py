@@ -81,10 +81,6 @@ class Train:
 
     def train(self, lr):
         print(lr)
-        if lr == 0.5:
-            return 188.7793
-        if lr == 1:
-            return 150.4787
         # The language model assumes a truncated vocab and a feature definition.
         lm = util.LogLinearLanguageModel(self.args.model, self.vocab, self.args.unk,
                                          self.feature_extractor, self.f2i, self.fcache, self.x2ys,
