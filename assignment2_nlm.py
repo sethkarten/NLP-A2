@@ -92,12 +92,12 @@ class FFLM(nn.Module):
 
         # Seed needed for reproducibility.
         random.seed(seed)
-        torch.manual_seed(args.seed)
+        torch.manual_seed(seed)
 
         self.E = nn.Embedding(self.V, wdim)
 
         # TODO: define feedfoward layer with correct dimensions.
-        self.FF = FF(wdim,hdim,self.V,nlayers)
+        self.FF = FF(wdim*nhis,hdim,self.V,nlayers)
 
         self.apply(get_init_weights(init))
         self.lr = lr
@@ -110,7 +110,12 @@ class FFLM(nn.Module):
     def forward(self, X, Y, mean=True):  # X (B x nhis), Y (B)
         # TODO: calculate logits (B x V) s.t.
         #       softmax(logits[i,:]) = distribution p(:|X[i]) under the model.
-        logits = self.FF(self.E(X))[:,self.nhis-1,:]
+        # exit()
+        # print(X[0])
+        # print(X.size())
+        # print(self.E(X).view((16,90)).size())
+        # exit()
+        logits = self.FF(self.E(X).view((self.batch_size,-1)))#[:,self.nhis-1,:]
         loss = self.mean_ce(logits, Y) if mean else self.sum_ce(logits, Y)  # expects (16,1000)
         return loss
 

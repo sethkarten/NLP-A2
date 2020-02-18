@@ -91,15 +91,6 @@ class LogLinearLanguageModel:
             # TODO: Implement the gradient update w = w - lr * grad_w J(w).
             # The update must be sparse. Do not work with the whole vector w.
             # Use caches self.fcache and self.x2ys.
-            # for _y in self.x2ys[tuple(x)]:
-            #     c = x.copy()
-            #     c.append(y)
-            #     y_idx = self.fcache[tuple(c)]
-            #     for ind_y in y_idx:
-            #         self.w[ind_y] -= self.lr * np.log(q[self.token_to_idx[_y]])
-            # print(y, self.token_to_idx[y], q[self.token_to_idx[y]])
-            # print(math.log(q[self.token_to_idx[y]]))
-            # print()
             total_loss -= math.log(q[self.token_to_idx[y]])
             if (ex_num + 1) % self.check_interval == 0:
                 print('%d/%d examples, avg loss %g' %
