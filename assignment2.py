@@ -37,6 +37,12 @@ def main(args):
         feature_extractor = util.basic_features1_suffix3  # TODO: Implement
     elif args.features == 'basic2':
         feature_extractor = util.basic_features2
+    elif args.features == 'prev5':
+        feature_extractor = util.prev5_features
+        util.WINDOW = 6
+    elif args.features == 'prev10':
+        feature_extractor = util.prev10_features
+        util.WINDOW = 11
     else:
         raise ValueError('Unknown feature extractor type.')
 

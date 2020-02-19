@@ -72,20 +72,14 @@ class LogLinearLanguageModel:
             # Compute the probability over the vocabulary given x.
             q = self.compute_probs(x)
             phi = np.zeros(len(self.token_to_idx))
-            # print(len(self.fcache),len(self.w),len(self.f2i))
 
-            # print(tuple(x)+tuple([y]), y_idx)
-            # for ind_y in y_idx:
-            #     phi[ind_y] = 1
             for _y in self.x2ys[tuple(x)]:
                 val = 0
                 if _y is y:
                     val = 1
-                exp_val = 0
                 y_idx = self.fcache[tuple(x)+tuple([_y])]
                 feat = self.feature_extractor(tuple(x)+tuple([y]))
                 for ind_y in y_idx:
-                    # exp_val += q[ind_y] * 1
                     self.w[ind_y] -= self.lr * (q[self.token_to_idx[_y]]- val)
 
             # TODO: Implement the gradient update w = w - lr * grad_w J(w).
@@ -145,17 +139,29 @@ def basic_features1(window):
 
 
 def basic_features1_suffix3(window):
-    # a={'c-1=%s^w=%s' % (window[-2], window[-1]): True,
-    #          'c-1s1=%s^w=%s' % (window[-2][-1], window[-1]): True,
-    #          'c-1s2=%s^w=%s' % (window[-2][-2:], window[-1]): True,
-    #          'c-1s3=%s^w=%s' % (window[-2][-3:], window[-1]): True}
-    # print(window,a)
-    # exit()
     return  {'c-1=%s^w=%s' % (window[-2], window[-1]): True,
              'c-1s1=%s^w=%s' % (window[-2][-1], window[-1]): True,
              'c-1s2=%s^w=%s' % (window[-2][-2:-1], window[-1]): True,
              'c-1s3=%s^w=%s' % (window[-2][-3:-1], window[-1]): True}  # TODO: Implement
 
+def prev5_features(window):
+    return {'c-1=%s^w=%s' % (window[-2], window[-1]): True,
+            'c-2=%s^w=%s' % (window[-3], window[-1]): True,
+             'c-3=%s^w=%s' % (window[-4], window[-1]): True,
+             'c-4=%s^w=%s' % (window[-5], window[-1]): True,
+             'c-5=%s^w=%s' % (window[-6], window[-1]): True}
+
+def prev10_features(window):
+    return {'c-1=%s^w=%s' % (window[-2], window[-1]): True,
+            'c-2=%s^w=%s' % (window[-3], window[-1]): True,
+             'c-3=%s^w=%s' % (window[-4], window[-1]): True,
+             'c-4=%s^w=%s' % (window[-5], window[-1]): True,
+             'c-5=%s^w=%s' % (window[-6], window[-1]): True,
+             'c-6=%s^w=%s' % (window[-7], window[-1]): True,
+             'c-7=%s^w=%s' % (window[-8], window[-1]): True,
+             'c-8=%s^w=%s' % (window[-9], window[-1]): True,
+             'c-9=%s^w=%s' % (window[-10], window[-1]): True,
+             'c-10=%s^w=%s' % (window[-11], window[-1]): True}
 
 def extract_features(training_corpus, feature_extractor):
     f2i = {}
